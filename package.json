@@ -13,6 +13,9 @@
     "index.js",
     "lib"
   ],
+  "scripts": {
+    "test": "eslint index.js"
+  },
   "devDependencies": {
     "eslint": "^3.8.0",
     "eslint-config-standard": "^6.2.0",
