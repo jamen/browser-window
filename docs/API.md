@@ -1,6 +1,6 @@
-# API
+## API
 
-## `browser-window`
+### `browser-window`
 
 The required module is a function you use to initialize.  You call it with an optional object for options:
 
@@ -10,17 +10,17 @@ require('browser-window')({ ...options })
 
 This returns `browser`, what you use to create windows.
 
-### Options
+#### Options
 
  - `linuxTransparencyFlags` (`Boolean`): Whether or not you want to have `--enable-transparent-visuals` ran for linux systems.  Defaults to `true`
 
-### Purpose
+#### Purpose
 
 Why do you have to initialize the module?  Simply so we can run things before `app`'s 'ready' event.
 
 For example, `linuxTransparencyFlags` uses functions which can't be run after the 'ready' event.  So we just need a simple initialization body.
 
-## `browser([options])`
+### `browser([options])`
 
 Creates a `window` with your given options.
 
@@ -28,13 +28,13 @@ Creates a `window` with your given options.
 const window = browser({width: 100, height: 200})
 ```
 
-### Options
+#### Options
 
 All options supplied are compatible with [`BrowserWindow`'s options](https://github.com/electron/electron/blob/master/docs/api/browser-window.md), in addition to some of our own:
 
  - TODO: Make custom options.
 
-## `browser.frameless([options])`
+### `browser.frameless([options])`
 
 An alias of `browser` that has default options for a [frameless window](https://github.com/electron/electron/blob/master/docs/api/frameless-window.md). Returns `window`.
 
@@ -42,7 +42,7 @@ An alias of `browser` that has default options for a [frameless window](https://
 browser.frameless({width: 275, height: 75})
 ```
 
-## `browser.transparent([options])`
+### `browser.transparent([options])`
 
 An alias of `browser` that has default options for a [frameless and transparent background window](https://github.com/electron/electron/blob/master/docs/api/frameless-window.md#transparent-window).  Returns `window`.
 
@@ -50,7 +50,7 @@ An alias of `browser` that has default options for a [frameless and transparent 
 browser.transparent({width: 20, height: 20})
 ```
 
-## `window`
+### `window`
 
 The `window` object the `browser()` functions return.  Not to be confused with the [global `window` object](https://developer.mozilla.org/en-US/docs/Web/API/Window).
 
@@ -60,7 +60,7 @@ const window = browser.transparent()
 ```
 
 
-## `window.load(source, [options, callback])`
+### `window.load(source, [options, callback])`
 
 Load a webpage or data on the window.
 
@@ -85,11 +85,11 @@ fs.readFile('image.png', (err, image) => {
 window.load('<p>Hello world</p>', {type: 'text/html'})
 ```
 
-### Options
+#### Options
 
  - `type` (`String`): A MIME type of the data you are loading.  i.e. `text/html`, `text/plain`, `image/png`. If falsy the source is used as a URL.
 
-## `window.send(channel, [...args])`
+### `window.send(channel, [...args])`
 
 An alias of [`webContents.send`](https://github.com/electron/electron/blob/master/docs/api/web-contents.md#contentssendchannel-arg1-arg2-) on `BrowserWindow` to be more nice:
 
@@ -99,7 +99,7 @@ window.send('some-name', 1, 2, 3)
 
 See `webContents.send` docs for more info.
 
-## `window.subwindow([options])`
+### `window.subwindow([options])`
 
 Spawn and return a new `window` as a child of the window being called on.
 
@@ -114,7 +114,7 @@ const child = window.subwindow()
 child.load('<p>Hello world</p>', {type: 'text/html'})
 ```
 
-## `window._native`
+### `window._native`
 
 Access to the `BrowserWindow` object backing the `window`.
 
