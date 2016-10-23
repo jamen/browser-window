@@ -1,65 +1,89 @@
-browser.frameless = frameless
-browser.transparent = transparent
-module.exports = browser
-const { BrowserWindow, ipcMain } = require('electron')
-const EventEmitter = require('events')
-const fastArgs = require('fast-args')
+module.exports = create
+const { BrowserWindow, app } = require('electron')
 const assign = require('assign-deep')
+const os = require('os')
+function noop () {}
 
-/**
- * Normal window
- */
-function browser (windowOptions) {
-  // Add defaults to window options.
-  // windowOptions = assign({}, windowOptions)
+function create (initOptions) {
+  initOptions = assign({
+    linuxTransparencyFlags: true
+  }, initOptions)
 
-  // Create window back-end with options
-  const window = new BrowserWindow(windowOptions)
+  // Enable command-line flags for transparent windows on some Linux DEs.
+  if (initOptions.linuxTransparencyFlags && os.platform() === 'linux') {
+    if (!app.isReady()) app.commandLine.appendSwitch('enable-transparent-visuals')
+    else throw new Error('Cannot enable transparent visuals flags after app is ready.')
+  }
 
-  // Load a URL, buffer, string, etc.
-  function load (source, options) {
-    options = assign({
-      data: null,
-      encoding: 'base64'
-    }, options)
+  // Custom browser window object
+  function browser (windowOptions) {
+    windowOptions = assign({}, windowOptions)
 
-    // Encode to data URI
-    if (options.data) {
-      const data = Buffer.from(source).toString(options.encoding)
-      window.loadURL(`data:${options.data};${options.encoding},${data}`)
-    } else {
-      window.loadURL(source)
+    // Handle `browser-window` being passed as `parent`.
+    if (windowOptions.parent && windowOptions.parent._native) {
+      windowOptions.parent = windowOptions.parent._native
     }
+
+    // Create `BrowserWindow` backend.
+    const window = new BrowserWindow(windowOptions)
+
+    // Method for loading urls or data.
+    function load (source, options, callback = noop) {
+      if (typeof options === 'function') {
+        callback = options
+        options = {}
+      }
+      options = assign({type: null, encoding: 'base64'}, options)
+
+      // Callback handlers
+      window.webContents.once('did-finish-load', successHandler)
+      window.webContents.once('did-fail-load', failHandler)
+      function failHandler (event, code, desc) {
+        window.webContents.removeListener('did-finish-load', successHandler)
+        callback(new Error(`${code}: ${desc}`))
+      }
+      function successHandler () {
+        window.webContents.removeListener('did-fail-load', failHandler)
+        callback(null)
+      }
+
+      // Load source depending on type.
+      if (options.type) {
+        // Load data as type.
+        const data = Buffer.from(source).toString(options.encoding)
+        window.loadURL(`data:${options.type};${options.encoding},${data}`, options)
+      } else {
+        // Load as URL if no type provided.
+        window.loadURL(source, options)
+      }
+    }
+
+    // Send IPC messages
+    function send (...args) {
+      return window.webContents.send(...args)
+    }
+
+    // Create a child window
+    function subwindow (options) {
+      return browser(assign({ parent: window }, options))
+    }
+
+    // Return methods
+    return {load, send, subwindow, _native: window}
   }
 
-  // Send an IPC message
-  function send (...args) {
-    return window.webContents.send(...args)
+  // Frameless window alias
+  function frameless (options) {
+    return browser(assign({frame: false}, options))
   }
 
-  return { load, send }
-}
+  // Transparent window alias
+  function transparent (options) {
+    return frameless(assign({transparent: true}, options))
+  }
 
-/**
- * Frameless window
- */
-function frameless (options) {
-  options = Object.assign({
-    frame: false
-  }, options)
-
-  // Create window
-  return browser(options)
-}
-
-/**
- * Transparent window
- */
-function transparent (options) {
-  options = Object.assign({
-    transparent: true
-  }, options)
-
-  // Create window
-  return frameless(options)
+  // Set methods and return
+  browser.frameless = frameless
+  browser.transparent = transparent
+  return browser
 }
