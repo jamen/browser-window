@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "assign-deep": "^0.4.5",
-    "fast-args": "^1.0.0"
+    "fast-args": "^1.0.0",
+    "path-template": "github:jamen/path-template"
   }
 }

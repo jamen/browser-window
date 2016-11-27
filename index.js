@@ -2,6 +2,8 @@ module.exports = create
 const { BrowserWindow, app } = require('electron')
 const assign = require('assign-deep')
 const os = require('os')
+const path = require('path-template')
+const url = require('url')
 function noop () {}
 
 function create (initOptions) {
@@ -53,8 +55,12 @@ function create (initOptions) {
         const data = Buffer.from(source).toString(options.encoding)
         window.loadURL(`data:${options.type};${options.encoding},${data}`, options)
       } else {
-        // Load as URL if no type provided.
-        window.loadURL(source, options)
+        sourceUrl = url.parse(source)
+        if(!sourceUrl.protocol) {
+          sourceUrl.protocol = `file:`
+          sourceUrl.path = path`${sourceUrl.path}`
+        }
+        window.loadURL(sourceUrl, options)
       }
     }
 
