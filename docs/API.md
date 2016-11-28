@@ -32,7 +32,7 @@ const window = browser({width: 100, height: 200})
 
 All options supplied are compatible with [`BrowserWindow`'s options](https://github.com/electron/electron/blob/master/docs/api/browser-window.md), in addition to some of our own:
 
- - TODO: Make custom options.
+ - `graceful` (`Boolean`): [Load windows gracefully.](https://github.com/electron/electron/blob/master/docs/api/browser-window.md#showing-window-gracefully) Defaults to `true`.
 
 ### `browser.frameless([options])`
 
@@ -72,12 +72,12 @@ Load a webpage or data on the window.
 const window = browser({autoHideMenuBar: true})
 
 // Load URL
-window.load('https://github.com/', (err) => {
+window.load('https://github.com/', (err, code, desc) => {
   console.log('Loaded')
 })
 
 // Load data
-fs.readFile('image.png', (err, image) => {
+fs.readFile('image.png', (err, code, desc) => {
   window.load(image, {type: 'image/png'})
 })
 

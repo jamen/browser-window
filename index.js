@@ -1,8 +1,7 @@
 const { BrowserWindow, app } = require('electron')
 const assign = require('assign-deep')
 const os = require('os')
-const path = require('path-template')
-const eventCallback = require('event-callback')
+const eventcb = require('event-callback')
 const url = require('url')
 function noop () {}
 
@@ -26,8 +25,12 @@ function create (initOptions) {
       winOptions.parent = winOptions.parent._native
     }
 
+    if (winOptions.graceful) winOptions.show = false
+
     // Create `BrowserWindow` backend.
     const window = new BrowserWindow(winOptions)
+
+    if (winOptions.graceful) window.on('ready-to-show', function () { window.show() })
 
     // Method for loading urls or data.
     function load (source, options, callback = noop) {
@@ -36,10 +39,7 @@ function create (initOptions) {
 
       // Callback handler
       var contents = window.webContents
-      eventCallback(contents, 'did-finish-load', 'did-fail-load', function (err, code, desc) {
-        if (err) callback(new Error(`${code}: ${desc}`))
-        else callback(null)
-      })
+      eventcb(contents, 'did-finish-load', 'did-fail-load', callback)
 
       // Load source as data:
       if (options.type) {

@@ -25,7 +25,6 @@
   "dependencies": {
     "assign-deep": "^0.4.5",
     "event-callback": "^0.1.2",
-    "fast-args": "^1.0.0",
-    "path-template": "github:jamen/path-template"
+    "fast-args": "^1.0.0"
   }
 }
