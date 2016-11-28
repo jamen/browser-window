@@ -30,7 +30,7 @@ const window = browser({width: 100, height: 200})
 
 #### Options
 
-All options supplied are compatible with [`BrowserWindow`'s options](https://github.com/electron/electron/blob/master/docs/api/browser-window.md), in addition to some of our own:
+All options supplied are compatible with [`BrowserWindow`'s options](https://github.com/electron/electron/blob/master/docs/api/browser-window.md), in addition to some of it's own:
 
  - `graceful` (`Boolean`): [Load windows gracefully.](https://github.com/electron/electron/blob/master/docs/api/browser-window.md#showing-window-gracefully) Defaults to `true`.
 
