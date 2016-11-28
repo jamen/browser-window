@@ -1,67 +1,56 @@
-module.exports = create
 const { BrowserWindow, app } = require('electron')
 const assign = require('assign-deep')
 const os = require('os')
 const path = require('path-template')
+const eventCallback = require('event-callback')
 const url = require('url')
 function noop () {}
 
+module.exports = create
+
 function create (initOptions) {
-  initOptions = assign({
-    linuxTransparencyFlags: true
-  }, initOptions)
+  initOptions = assign({linuxFlags: true}, initOptions)
 
   // Enable command-line flags for transparent windows on some Linux DEs.
-  if (initOptions.linuxTransparencyFlags && os.platform() === 'linux') {
+  if (initOptions.linuxFlags && os.platform() === 'linux') {
     if (!app.isReady()) app.commandLine.appendSwitch('enable-transparent-visuals')
     else throw new Error('Cannot enable transparent visuals flags after app is ready.')
   }
 
   // Custom browser window object
-  function browser (windowOptions) {
-    windowOptions = assign({}, windowOptions)
+  function browser (winOptions) {
+    winOptions = assign({ graceful: true }, winOptions)
 
     // Handle `browser-window` being passed as `parent`.
-    if (windowOptions.parent && windowOptions.parent._native) {
-      windowOptions.parent = windowOptions.parent._native
+    if (winOptions.parent && winOptions.parent._native) {
+      winOptions.parent = winOptions.parent._native
     }
 
     // Create `BrowserWindow` backend.
-    const window = new BrowserWindow(windowOptions)
+    const window = new BrowserWindow(winOptions)
 
     // Method for loading urls or data.
     function load (source, options, callback = noop) {
-      if (typeof options === 'function') {
-        callback = options
-        options = {}
-      }
+      if (typeof options === 'function') callback = options, options = {}
       options = assign({type: null, encoding: 'base64'}, options)
 
-      // Callback handlers
-      window.webContents.once('did-finish-load', successHandler)
-      window.webContents.once('did-fail-load', failHandler)
-      function failHandler (event, code, desc) {
-        window.webContents.removeListener('did-finish-load', successHandler)
-        callback(new Error(`${code}: ${desc}`))
-      }
-      function successHandler () {
-        window.webContents.removeListener('did-fail-load', failHandler)
-        callback(null)
+      // Callback handler
+      var contents = window.webContents
+      eventCallback(contents, 'did-finish-load', 'did-fail-load', function (err, code, desc) {
+        if (err) callback(new Error(`${code}: ${desc}`))
+        else callback(null)
+      })
+
+      // Load source as data:
+      if (options.type) {
+        const data = Buffer.from(source).toString(options.encoding)
+        return window.loadURL(`data:${options.type};${options.encoding},${data}`, options)
       }
 
-      // Load source depending on type.
-      if (options.type) {
-        // Load data as type.
-        const data = Buffer.from(source).toString(options.encoding)
-        window.loadURL(`data:${options.type};${options.encoding},${data}`, options)
-      } else {
-        sourceUrl = url.parse(source)
-        if(!sourceUrl.protocol) {
-          sourceUrl.protocol = `file:`
-          sourceUrl.path = path`${sourceUrl.path}`
-        }
-        window.loadURL(sourceUrl, options)
-      }
+      // Load source as URL:
+      const protocol = url.parse(source).protocol
+      if (!protocol) source = 'file://' + source
+      return window.loadURL(source, options)
     }
 
     // Send IPC messages

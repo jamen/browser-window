@@ -85,9 +85,12 @@ fs.readFile('image.png', (err, image) => {
 window.load('<p>Hello world</p>', {type: 'text/html'})
 ```
 
+If you don't specify a protocol in the URL, it will assume `file://`.
+
 #### Options
 
  - `type` (`String`): A MIME type of the data you are loading.  i.e. `text/html`, `text/plain`, `image/png`. If falsy the source is used as a URL.
+ - `encoding` (`String`): Encoding type of data.  Defaults to `base64`.
 
 ### `window.send(channel, [...args])`
 
