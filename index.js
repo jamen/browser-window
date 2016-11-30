@@ -64,7 +64,7 @@ function create (initOptions) {
     }
 
     // Return methods
-    return {load, send, subwindow, _native: window}
+    return {load, send, subwindow, native: window}
   }
 
   // Frameless window alias
